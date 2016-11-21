@@ -1,16 +1,25 @@
 {
   "name": "routine",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "concurrently --kill-others \"node index.js\" \"gulp watch\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.15.2",
-    "express": "^4.14.0"
+    "compression": "^1.6.2",
+    "express": "^4.14.0",
+    "lodash": "^4.17.2",
+    "mkdirp": "^0.5.1",
+    "sqlite3": "^3.1.8"
+  },
+  "devDependencies": {
+    "concurrently": "^3.1.0",
+    "gulp": "^3.9.1",
+    "gulp-elm": "^0.6.1"
   }
 }

@@ -1,11 +1,11 @@
 let express = require('express');
-let database = require('./modules/database');
 let middleware = require('./modules/middleware');
+let compression = require('compression');
 
 let app = express();
 
-database.inizialize();
-
+app.use(compression());
+app.use(express.static('./src'));
 app.use(middleware.cors);
 app.use(middleware.json);
 
@@ -22,7 +22,9 @@ app.put('/api/routines',
 );
 
 app.post('/api/routines/:id',
-	middleware.tick
+	middleware.tick,
+	middleware.untick,
+	middleware.rename
 );
 
 app.delete('/api/routines/:id',

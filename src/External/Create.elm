@@ -10,15 +10,20 @@ url : String
 url =
   "/api/routines"
 
-request : Model -> Request Routine
-request model =
-  post
-    url
-    (jsonBody (Encode.routine model))
-    Decode.routine
+put : String -> Request Routine
+put name =
+  request
+  { method = "PUT"
+  , headers = []
+  , url = url
+  , body = jsonBody (Encode.routine name)
+  , expect = expectJson Decode.routine
+  , timeout = Nothing
+  , withCredentials = False
+  }
 
-create : Model -> Cmd Message
-create model =
+create : String -> Cmd Message
+create name =
   send
     CreateResult
-    (request model)
+    (put name)
