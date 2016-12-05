@@ -4,25 +4,23 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import String
-<<<<<<< HEAD
-import Types exposing (..)
-=======
 import Json.Decode
 
 import Date.Extra exposing (Interval(..))
 import Date exposing (Date, Month(..))
 import Types exposing (..)
 
->>>>>>> 1787ade... Fixup
 
 view : Model -> Html Message
 view model =
   div []
-  [ header model
+  [ modal model
+  , mainHeader model
   , div [class "container-narrow"]
     [ listGroup model
     ]
   ]
+
 
 noElementWhatsoever : Html Message
 noElementWhatsoever =
@@ -286,3 +284,16 @@ ensurePrecedingZero n =
     |> (++) "0"
   else
     toString n
+
+
+-- CUSTOM EVENTS
+
+
+isolatedOnClick : Message -> Attribute Message
+isolatedOnClick message =
+  onWithOptions
+    "click"
+    { stopPropagation = True
+    , preventDefault = False
+    }
+    (Json.Decode.succeed message)

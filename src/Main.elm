@@ -25,6 +25,7 @@ init =
 initialModel : Model
 initialModel =
   { new = Nothing
+  , modal = Nothing
   , today = Nothing
   , routines = []
   }
@@ -32,6 +33,15 @@ initialModel =
 subscriptions : Model -> Sub Message
 subscriptions _ =
   Sub.none
+
+deleteConfirmation : Id -> ModalConfig
+deleteConfirmation id =
+  ModalConfig
+    "Вы на самом деле хотите удалить эту привычку? Данные, связанные с ней, будут утрачены."
+    "Не удалять"
+    "Удалить"
+    (DeleteConfirm id)
+
 
 -- UPDATE
 
@@ -80,7 +90,11 @@ update message model =
             ! []
 
     Delete id ->
-      model
+      { model | modal = Just (deleteConfirmation id) }
+        ! []
+
+    DeleteConfirm id ->
+      { model | modal = Nothing }
         ! [External.Delete.delete id]
 
     DeleteResult result ->

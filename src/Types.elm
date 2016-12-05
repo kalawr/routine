@@ -5,6 +5,7 @@ import Date exposing (Date)
 
 type alias Model =
   { new : Maybe String
+  , modal : Maybe ModalConfig
   , today : Maybe Date
   , routines : List Routine
   }
@@ -28,14 +29,23 @@ type Message
   | Create String
   | CreateResult (Result Error Routine)
   | Delete Id
+  | DeleteConfirm Id
   | DeleteResult (Result Error Id)
   | Tick Id
   | TickResult (Result Error (Id, Date))
   | Untick Id
   | UntickResult (Result Error Id)
-  | IntentionToEdit Routine String
-  | Edit Id String
-  | EditSubmit Id String
-  | EditResult (Result Error (Id, String))
-  | CancelEdit Id
+  | IntentionToRename Routine String
+  | Rename Id String
+  | RenameSubmit Id String
+  | RenameResult (Result Error (Id, String))
+  | CancelRename Id
+  | DismissModal
   | NoOp
+
+type alias ModalConfig =
+  { text : String
+  , cancelText : String
+  , confirmText : String
+  , confirmMessage : Message
+  }
