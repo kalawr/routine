@@ -5,6 +5,7 @@ import Task exposing (..)
 import Decode
 import Encode
 import Types exposing (..)
+import Date exposing (Date)
 
 url : Id ->  String
 url id =
@@ -12,7 +13,7 @@ url id =
   |> toString
   |> (++) "api/routines/"
 
-request : Id -> Request TickResponse
+request : Id -> Request (Id, Date)
 request id =
   post
     (url id)

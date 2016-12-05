@@ -3,10 +3,17 @@ module View exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Date exposing (Date, Month(..))
-import Date.Extra exposing (Interval(..))
 import String
+<<<<<<< HEAD
 import Types exposing (..)
+=======
+import Json.Decode
+
+import Date.Extra exposing (Interval(..))
+import Date exposing (Date, Month(..))
+import Types exposing (..)
+
+>>>>>>> 1787ade... Fixup
 
 view : Model -> Html Message
 view model =
@@ -17,9 +24,32 @@ view model =
     ]
   ]
 
+noElementWhatsoever : Html Message
+noElementWhatsoever =
+  text ""
 
-header : Model -> Html Message
-header model =
+
+modal : Model -> Html Message
+modal model =
+  case model.modal of
+    Just config ->
+      div [class "fixed stretch z-modal bg-transparent-white flex pa-2", onClick DismissModal]
+      [ div [class "mxw-500 ma-auto pa-2 box-shadow bg-white", isolatedOnClick NoOp]
+        [ text config.text
+        , div [class "cf mt-2"]
+          [ div [class "fr"]
+            [ button [class "border-0 pa-half round-corners bg-light-gray", isolatedOnClick DismissModal] [text config.cancelText]
+            , button [class "border-0 pa-half round-corners white bg-emerald ml-half", isolatedOnClick config.confirmMessage] [text config.confirmText]
+            ]
+          ]
+        ]
+      ]
+    Nothing ->
+      noElementWhatsoever
+
+
+mainHeader : Model -> Html Message
+mainHeader model =
   div [class "bg-white pv-1 mb-4 box-shadow"]
   [ div [class "container ph-2 flex flex-wrap flex-row flex-x-start flex-justify-between"]
     [ h1 [class "fw-thin mt-0 mb-1 font-lg"]
@@ -42,6 +72,7 @@ createGroup model =
         , onInput TypeName
         , placeholder "Новая привычка"
         , id "create-input"
+        , autocomplete False
         ] []
       , button [type_ "submit", class "emerald border-1 pa-half ml-1 round-corners"]
         [ text "Создать"
@@ -65,37 +96,70 @@ listGroup model =
 listItem : Model -> Routine -> Html Message
 listItem model routine =
   article [class "box-shadow mh-2-negative mb-1 pa-2 bg-white oh"]
-  [ div [ class "cf"]
-    [ listItemHeading routine
-    , div [class "fr"]
-      [ button [class "no-border pa-0", onClick (Delete routine.id)]
-        [ i [class "icon-trash feather"] []
-        ]
-      ]
-    ]
+  [ listItemHeader routine
   , yearBlock model routine.progress
-  , listItemButton model routine 
+  , listItemButton model routine
   ]
 
 
-listItemHeading : Routine -> Html Message
-listItemHeading routine =
-  case routine.editing of
-    Nothing ->
-      h2 [onDoubleClick (IntentionToEdit routine (editId routine.id)), class "fl no-select pointer mb-1 mt-0 fw-thin font-lg bb-1 border-transparent"]
-      [ text routine.name
-      ]
-    Just string ->
-      Html.form [onSubmit (EditSubmit routine.id string), class "fl mb-1"]
-      [ input
-        [ type_ "text"
-        , onInput (Edit routine.id)
-        , value string
-        , class "mb-half-negative pa-0 pb-half bb-1 border-light font-lg"
-        , id (editId routine.id)
-        ] []
-      , button [type_ "submit", class "emerald border-1 font-sm uppercase fw-normal ml-half round-corners"] [text "Сохранить"]
-      , button [type_ "button", class "border-1 font-sm uppercase fw-normal ml-half round-corners", onClick (CancelEdit routine.id)] [text "Отменить"]
+listItemHeader : Routine -> Html Message
+listItemHeader routine =
+  let
+    content =
+      case routine.editing of
+        Nothing ->
+          h2
+          [ onDoubleClick (IntentionToRename routine (editId routine.id))
+          , class "no-select pointer mb-1 mt-0 fw-thin font-lg bb-1 border-transparent flex-1"
+          ]
+          [ text routine.name
+          ]
+
+        Just string ->
+          Html.form [onSubmit (RenameSubmit routine.id string), class "mb-half flex-1"]
+          [ input
+            [ type_ "text"
+            , onInput (Rename routine.id)
+            , value string
+            , class "pa-0 pb-half bb-1 border-light font-lg mr-half w-100"
+            , id (editId routine.id)
+            , autocomplete False
+            ] []
+          ]
+
+    editButtons =
+      case routine.editing of
+        Nothing ->
+          []
+        
+        Just string ->
+          [ button
+            [ type_ "submit"
+            , class " pa-0 tiny-button no-border"
+            , onClick (RenameSubmit routine.id string)
+            ]
+            [ i [class "icon-check feather"] []
+            ]
+          , button
+            [ type_ "button"
+            , class " pa-0 tiny-button no-border"
+            , onClick (CancelRename routine.id)
+            ]
+            [ i [class "icon-cross feather"] []
+            ]
+          ]
+
+    buttons =
+      List.append
+        editButtons
+        [ button [class " pa-0 tiny-button no-border", onClick (Delete routine.id)]
+          [ i [class "icon-trash feather"] []
+          ]
+        ]
+  in
+    header [class "flex"]
+      [ content
+      , div [] buttons
       ]
 
 
@@ -116,7 +180,7 @@ listItemButton model routine =
     [ button
       [ class "flex-1 no-border pa-half round-corners"
       , classList 
-        [ ("bg-gray", (not todayOk))
+        [ ("bg-light-gray", (not todayOk))
         , ("bg-emerald", todayOk)
         , ("white", todayOk)
         ]
@@ -184,7 +248,7 @@ yearBlock model progress =
           yearItem
           (yearMatches (year today) progress))
     Nothing ->
-      text ""
+      noElementWhatsoever
 
 
 yearItem : (Date, Bool) -> Html Message
@@ -194,6 +258,7 @@ yearItem (date, attended) =
   , class "tick fl"
   , classList 
     [ ("bg-emerald", attended)
+    , ("bg-light-gray", not attended)
     ]
   ]
   []

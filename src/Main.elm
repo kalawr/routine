@@ -10,9 +10,8 @@ import External.Tick
 import External.Untick
 import External.Edit
 import External.Now
+import External.Focus
 import View exposing (..)
-import Dom
-import Task
 
 -- STATE
 
@@ -41,7 +40,7 @@ update message model =
   case message of
     IntentionToCreate ->
       { model | new = Just ""}
-        ! [Task.attempt (\_ -> NoOp) (Dom.focus "create-input")]
+        ! [External.Focus.focusOnto "create-input"]
 
     TypeName string ->
       { model | new = Just string }
@@ -87,7 +86,7 @@ update message model =
     DeleteResult result ->
       case result of
         Ok id ->
-          { model | routines = removeRoutine model.routines id }
+          { model | routines = model.routines |> removeRoutine id }
             ! []
         Err _ ->
           model
@@ -99,8 +98,8 @@ update message model =
 
     TickResult result ->
       case result of 
-        Ok tick ->
-          { model | routines = addTick model.routines tick }
+        Ok (id, date) ->
+          { model | routines = model.routines |> addTick id date }
             ! []
         Err _ ->
           model
@@ -113,7 +112,7 @@ update message model =
     UntickResult result ->
       case result of
         Ok id ->
-          { model | routines = removeTick model.routines model.today id }
+          { model | routines = model.routines |> removeTick model.today id }
             ! []
         Err _ ->
           model
@@ -123,57 +122,61 @@ update message model =
       { model | today = Just date }
         ! []
 
-    IntentionToEdit routine elementId ->
-      { model | routines = editRoutine routine.id routine.name model.routines }
-        ! [Task.attempt (\_ -> NoOp) (Dom.focus elementId) ]
+    IntentionToRename routine elementId ->
+      { model | routines = model.routines |> renameRoutine routine.id routine.name }
+        ! [External.Focus.focusOnto elementId]
 
-    Edit id string ->
-      { model | routines = editRoutine id string model.routines }
+    Rename id name ->
+      { model | routines = model.routines |> renameRoutine id name }
         ! []
 
-    EditSubmit id name ->
+    RenameSubmit id name ->
       model
         ! [External.Edit.edit id name]
 
-    EditResult result ->
+    RenameResult result ->
       case result of
         Ok (id, name) ->
-          { model | routines = finalizeEdit id name model.routines }
+          { model | routines = model.routines |> finalizeRename id name }
             ! []
         Err _ ->
           model
             ! []
 
-    CancelEdit id ->
-      { model | routines = model.routines |> cancelEdit id }
+    CancelRename id ->
+      { model | routines = model.routines |> cancelRename id }
         ! []
 
     NoOp ->
       model
         ! []
 
+    DismissModal ->
+      { model | modal = Nothing }
+       ! []
+
 -- UPDATE HELPERS
 
-removeRoutine : List Routine -> Id -> List Routine
-removeRoutine list id =
+removeRoutine : Id -> List Routine -> List Routine
+removeRoutine id list =
   List.filter
     (\x -> x.id /= id)
     list
 
-addTick : List Routine -> TickResponse -> List Routine
-addTick list tick =
+addTick : Id -> Date -> List Routine -> List Routine
+addTick id date list =
   List.map
     (\routine ->
-      if routine.id == tick.routine
+      if routine.id == id
       then
-        { routine | progress = tick.date :: routine.progress }
+        { routine | progress = date :: routine.progress }
       else
         routine
     )
     list
 
-removeTick : List Routine -> Maybe Date -> Id -> List Routine
-removeTick routines today id =
+removeTick : Maybe Date -> Id -> List Routine -> List Routine
+removeTick today id routines =
   case today of
     Just date ->
       List.map
@@ -195,8 +198,8 @@ removeTick routines today id =
     Nothing ->
       routines
 
-editRoutine : Id -> String -> List Routine -> List Routine
-editRoutine id string routines =
+renameRoutine : Id -> String -> List Routine -> List Routine
+renameRoutine id string routines =
   List.map
     (\routine ->
       if routine.id == id
@@ -207,8 +210,8 @@ editRoutine id string routines =
     )
     routines
 
-finalizeEdit : Id -> String -> List Routine -> List Routine
-finalizeEdit id name routines =
+finalizeRename : Id -> String -> List Routine -> List Routine
+finalizeRename id name routines =
   List.map
     (\routine ->
       if routine.id == id
@@ -222,8 +225,8 @@ finalizeEdit id name routines =
     )
     routines
 
-cancelEdit : Id -> List Routine -> List Routine
-cancelEdit id routines =
+cancelRename : Id -> List Routine -> List Routine
+cancelRename id routines =
   List.map
     (\routine -> 
       if routine.id == id

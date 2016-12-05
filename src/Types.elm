@@ -2,7 +2,6 @@ module Types exposing (..)
 
 import Http exposing (Error(..))
 import Date exposing (Date)
-import Dom
 
 type alias Model =
   { new : Maybe String
@@ -15,12 +14,6 @@ type alias Routine =
   , progress : List Date
   , id : Id
   , editing : Maybe String
-  }
-
-type alias TickResponse = 
-  { id : Id
-  , routine : Id
-  , date : Date
   }
 
 type alias Id =
@@ -37,7 +30,7 @@ type Message
   | Delete Id
   | DeleteResult (Result Error Id)
   | Tick Id
-  | TickResult (Result Error TickResponse)
+  | TickResult (Result Error (Id, Date))
   | Untick Id
   | UntickResult (Result Error Id)
   | IntentionToEdit Routine String

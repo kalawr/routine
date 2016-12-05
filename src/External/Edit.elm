@@ -22,5 +22,5 @@ request id name =
 edit : Id -> String -> Cmd Message
 edit id name = 
   send
-    EditResult
+    RenameResult
     (request id name)

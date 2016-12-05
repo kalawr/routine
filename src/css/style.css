@@ -1,3 +1,5 @@
+/* global styles */
+
 * {
 	box-sizing: border-box;
 }
@@ -5,6 +7,22 @@
 body {
 	line-height: 1.5;
 }
+
+button {
+	color: inherit;
+	font: inherit;
+	outline: 0;
+	cursor: pointer;
+	background: none;
+}
+
+input {
+	outline: 0;
+	font: inherit;
+	color: inherit;
+}
+
+/* class-based styles */
 
 .sans-serif {
 	font-family: 'Roboto', sans-serif;
@@ -15,7 +33,7 @@ body {
 }
 
 .white {
-	color: #fff !important;
+	color: #fff;
 }
 
 .emerald {
@@ -31,7 +49,7 @@ body {
 }
 
 .bg-emerald {
-	background-color: #1ECD97 !important;
+	background-color: #1ECD97;
 }
 
 .bg-gray {
@@ -54,6 +72,16 @@ body {
 	padding-bottom: 0.5rem;
 }
 
+.pv-half {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+
+.ph-1 {
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
 .pa-2 {
 	padding: 2rem;
 }
@@ -66,6 +94,14 @@ body {
 .pv-1 {
 	padding-top: 1rem;
 	padding-bottom: 1rem;
+}
+
+.p-button-md {
+	padding: 3px 10px;
+}
+
+.ma-auto {
+	margin: auto;
 }
 
 .ma-0 {
@@ -98,6 +134,14 @@ body {
 
 .ml-half {
 	margin-left: 0.5rem;
+}
+
+.mr-half {
+	margin-right: 0.5rem;
+}
+
+.mb-half {
+	margin-bottom: 0.5rem;
 }
 
 .mh-2-negative {
@@ -166,28 +210,10 @@ body {
 }
 
 .tick {
-	width: 12px;
-	height: 12px;
-	border: 1px solid white;
-	background-color: #e4e4e4;
-}
-
-.tick.ok {
-	background-color: #a2ef05;
-}
-
-button {
-	color: inherit;
-	font: inherit;
-	outline: 0;
-	cursor: pointer;
-	background: none;
-}
-
-input {
-	outline: 0;
-	font: inherit;
-	color: inherit;
+	width: 10px;
+	height: 10px;
+	margin: 1px;
+	position: relative;
 }
 
 .cf::after {
@@ -245,7 +271,13 @@ input {
 }
 
 .flex-1 {
-	flex: 1 0 auto;
+	flex-grow: 1;
+	flex-basis: auto;
+}
+
+.flex-shrinking {
+	flex-shrink: 1;
+	flex-basis: auto;
 }
 
 .flex-10 {
@@ -264,7 +296,8 @@ input {
 	font-size: 24px;
 }
 
-.no-border {
+.no-border,
+.border-0 {
 	border: 0;
 }
 
@@ -285,6 +318,10 @@ input {
 	border-color: rgba(0, 0, 0, 0.2);
 }
 
+.border-normal {
+	border-color: rgba(0, 0, 0, 0.5);
+}
+
 .uppercase {
 	text-transform: uppercase;
 }
@@ -293,8 +330,16 @@ input {
 	font-size: 1.2rem;
 }
 
+.font-md {
+	font-size: 1rem;
+}
+
 .font-sm {
-	font-size: 0.7rem;
+	font-size: 0.85rem;
+}
+
+.font-xs {
+	font-size: 0.6875rem;
 }
 
 .fw-normal {
@@ -324,4 +369,40 @@ input {
 
 .round-corners {
 	border-radius: 4px;
+}
+
+.tiny-button {
+	padding: 0 4px;
+	margin-left: 2px;
+}
+
+.underline {
+	text-decoration: underline;
+}
+
+.absolute {
+	position: absolute;
+}
+
+.fixed {
+	position: fixed;
+}
+
+.stretch {
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+.z-modal {
+	z-index: 100;
+}
+
+.mxw-500 {
+	max-width: 500px;
+}
+
+.hidden {
+	display: none;
 }

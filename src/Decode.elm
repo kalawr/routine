@@ -26,11 +26,10 @@ tick : Decoder Date
 tick =
   (field "date" date)
 
-tickResponse : Decoder TickResponse
+tickResponse : Decoder (Id, Date)
 tickResponse =
-  map3
-    TickResponse
-    (field "id" int)
+  map2
+    (,)
     (field "routine" int)
     (field "date" date)
 
