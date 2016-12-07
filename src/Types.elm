@@ -6,7 +6,7 @@ import Date exposing (Date)
 type alias Model =
   { new : Maybe String
   , modal : Maybe ModalConfig
-  , today : Maybe Date
+  , today : Date
   , routines : List Routine
   }
 
@@ -24,7 +24,6 @@ type alias Id =
 type Message
   = IntentionToCreate
   | TypeName String
-  | Now Date
   | All
   | AllResult (Result Error (List Routine))
   | Create String

@@ -1,6 +1,7 @@
 import Html
 import Date exposing (Date)
 import Date.Extra exposing (Interval(..))
+import Time exposing (Time)
 
 import Types exposing (..)
 import External.Create
@@ -9,24 +10,28 @@ import External.Delete
 import External.Tick
 import External.Untick
 import External.Edit
-import External.Now
 import External.Focus
 import View exposing (..)
 
 -- STATE
 
-init : (Model, Cmd Message)
-init =
-  initialModel
-    ! [ External.Now.now
-      , External.All.all
-      ]
+init : Time -> (Model, Cmd Message)
+init time =
+  let
+    date =
+      time
+      |> Date.fromTime
+      |> Date.Extra.floor Day
+  in
+    initialModel date
+      ! [ External.All.all
+        ]
 
-initialModel : Model
-initialModel =
+initialModel : Date -> Model
+initialModel date =
   { new = Nothing
   , modal = Nothing
-  , today = Nothing
+  , today = date
   , routines = []
   }
 
@@ -130,10 +135,6 @@ update message model =
         Err _ ->
           model
             ! []
-
-    Now date ->
-      { model | today = date |> Date.Extra.floor Day |> Just }
-        ! []
 
     IntentionToRename routine elementId ->
       { model | routines = model.routines |> renameRoutine routine.id routine.name }
@@ -265,7 +266,7 @@ toggleMenu id routines =
 -- WIRE UP
 
 main =
-  Html.program
+  Html.programWithFlags
     { init = init
     , update = update
     , view = view

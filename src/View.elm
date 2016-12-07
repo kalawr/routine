@@ -97,19 +97,15 @@ routine model routine =
   [ routineHeader model routine
   , routineCalendar model routine.progress
   , routineButton model routine
-  , case model.today of
-      Just date ->
-        let
-          cmd =
-            case routine.progress |> List.member (yesterday date) of
-              True ->
-                Untick
-              False ->
-                Tick
-        in 
-          div [onClick (cmd routine.id (yesterday date)), hidden True] [text "Отметить за вчерашний день"]
-      Nothing ->
-        div [] []
+  , let
+      cmd =
+        case routine.progress |> List.member (yesterday model.today) of
+          True ->
+            Untick
+          False ->
+            Tick
+    in 
+      div [onClick (cmd routine.id (yesterday model.today)), hidden True] [text "Отметить за вчерашний день"]
   ]
 
 
@@ -183,24 +179,19 @@ routineCancelEdit model routine =
 
 routineMenu : Model -> Routine -> Html Message
 routineMenu model routine =
-  case model.today of
-    Just today ->
-      let
-        ticked =
-          todayTicked (yesterday today) routine.progress
-      in
-        div [class "relative"]
-        [ button [class "pa-0 tiny-button no-border", onClick (ToggleMenu routine.id)]
-          [ i [class "icon-menu feather"] []
-          ]
-        , ul [class "pa-0 ma-0 no-bullets box-shadow z-dropdown bg-white absolute top-100 right-0 font-sm", classList [("hidden", not routine.menuOpen)]]
-          [ li [class "pv-half ph-1 bg-light-gray-on-hover changes pointer nowrap", onClick (Delete routine.id)] [text "Удалить"]
-          , li [class "pv-half ph-1 bg-light-gray-on-hover changes pointer nowrap", onClick (routineButtonMessage routine.id (yesterday today) ticked)] [text "Отметить за вчерашний день"]
-          ]
-        ]
-
-    Nothing ->
-      noElementWhatsoever
+  let
+    ticked =
+      todayTicked (yesterday model.today) routine.progress
+  in
+    div [class "relative"]
+    [ button [class "pa-0 tiny-button no-border", onClick (ToggleMenu routine.id)]
+      [ i [class "icon-menu feather"] []
+      ]
+    , ul [class "pa-0 ma-0 no-bullets box-shadow z-dropdown bg-white absolute top-100 right-0 font-sm", classList [("hidden", not routine.menuOpen)]]
+      [ li [class "pv-half ph-1 bg-light-gray-on-hover changes pointer nowrap", onClick (Delete routine.id)] [text "Удалить"]
+      , li [class "pv-half ph-1 bg-light-gray-on-hover changes pointer nowrap", onClick (routineButtonMessage routine.id (yesterday model.today) ticked)] [text "Отметить за вчерашний день"]
+      ]
+    ]
 
 
 editId : Id -> String
@@ -212,28 +203,23 @@ editId id =
 
 routineButton : Model -> Routine -> Html Message
 routineButton model routine =
-  case model.today of
-    Just today ->
-      let
-        ticked =
-          todayTicked today routine.progress
-      in
-        div [class "flex flex-row mt-1"]
-        [ button
-          [ class "flex-1 no-border pa-half round-corners"
-          , classList 
-            [ ("bg-light-gray", (not ticked))
-            , ("bg-emerald", ticked)
-            , ("white", ticked)
-            ]
-          , onClick (routineButtonMessage routine.id today ticked)
-          ]
-          [ i [class "icon-check feather"] []
-          ]
+  let
+    ticked =
+      todayTicked model.today routine.progress
+  in
+    div [class "flex flex-row mt-1"]
+    [ button
+      [ class "flex-1 no-border pa-half round-corners"
+      , classList 
+        [ ("bg-light-gray", (not ticked))
+        , ("bg-emerald", ticked)
+        , ("white", ticked)
         ]
-
-    Nothing ->
-      noElementWhatsoever
+      , onClick (routineButtonMessage routine.id model.today ticked)
+      ]
+      [ i [class "icon-check feather"] []
+      ]
+    ]
 
 
 routineButtonMessage : Id -> Date -> Bool -> Message
@@ -282,14 +268,10 @@ dayInTicks ticks day =
 
 routineCalendar : Model -> List Date -> Html Message
 routineCalendar model progress =
-  case model.today of
-    Just today ->
-      div [class "ticks cf"]
-        (List.map
-          yearItem
-          (yearMatches (year today) progress))
-    Nothing ->
-      noElementWhatsoever
+  div [class "ticks cf"]
+    (List.map
+      yearItem
+      (yearMatches (year model.today) progress))
 
 
 yearItem : (Date, Bool) -> Html Message
