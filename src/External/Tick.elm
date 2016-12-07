@@ -13,15 +13,15 @@ url id =
   |> toString
   |> (++) "api/routines/"
 
-request : Id -> Request (Id, Date)
-request id =
+request : Id -> Date -> Request (Id, Date)
+request id date =
   post
     (url id)
-    (jsonBody Encode.tickAction)
+    (jsonBody (Encode.tickAction date))
     Decode.tickResponse
 
-tick : Id -> Cmd Message
-tick id = 
+tick : Id -> Date -> Cmd Message
+tick id date = 
   send
     TickResult
-    (request id)
+    (request id date)

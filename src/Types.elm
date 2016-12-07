@@ -15,6 +15,7 @@ type alias Routine =
   , progress : List Date
   , id : Id
   , editing : Maybe String
+  , menuOpen : Bool
   }
 
 type alias Id =
@@ -31,16 +32,17 @@ type Message
   | Delete Id
   | DeleteConfirm Id
   | DeleteResult (Result Error Id)
-  | Tick Id
+  | Tick Id Date
   | TickResult (Result Error (Id, Date))
-  | Untick Id
-  | UntickResult (Result Error Id)
+  | Untick Id Date
+  | UntickResult (Result Error (Id, Date))
   | IntentionToRename Routine String
   | Rename Id String
   | RenameSubmit Id String
   | RenameResult (Result Error (Id, String))
   | CancelRename Id
   | DismissModal
+  | ToggleMenu Id
   | NoOp
 
 type alias ModalConfig =

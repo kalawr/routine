@@ -81,12 +81,12 @@ module.exports.routines.update = function (db, id, name, callback)
 
 module.exports.ticks = {};
 
-module.exports.ticks.insert = function (db, id, callback)
+module.exports.ticks.insert = function (db, id, date, callback)
 {
 	db.run(
 		queries.INSERT_TICK,
 		id,
-		today(),
+		date,
 		callback
 	);
 };
@@ -100,22 +100,22 @@ module.exports.ticks.select = function (db, id, callback)
 	);
 };
 
-module.exports.ticks.today = function (db, id, callback)
+module.exports.ticks.today = function (db, id, date, callback)
 {
 	db.get(
 		queries.SELECT_TICK_BY_ID_AND_DATE,
 		id,
-		today(),
+		date,
 		callback
 	);
 };
 
-module.exports.ticks.deleteTodays = function (db, id, callback)
+module.exports.ticks.deleteTodays = function (db, id, date, callback)
 {
 	db.run(
 		queries.DELETE_TODAYS_TICK,
 		id,
-		today(),
+		date,
 		callback
 	);
 };

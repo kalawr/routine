@@ -1,6 +1,8 @@
 module Encode exposing (..)
 
 import Json.Encode exposing (..)
+import Date exposing (Date)
+import Date.Extra exposing (..)
 import Types exposing (..)
 
 routine : String -> Value
@@ -9,16 +11,26 @@ routine name =
     [ ("name", string name)
     ]
 
-tickAction : Value
-tickAction =
+tickAction : Date -> Value
+tickAction date =
   object
   [ ("action", string "tick")
+  , ( "date"
+    , date
+      |> toFormattedString "E MMM dd y"
+      |> string
+    )
   ]
 
-untickAction : Value
-untickAction =
+untickAction : Date -> Value
+untickAction date =
   object
   [ ("action", string "untick")
+  , ( "date"
+    , date
+      |> toFormattedString "E MMM dd y"
+      |> string
+    )
   ]
 
 editAction : String -> Value

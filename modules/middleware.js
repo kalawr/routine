@@ -45,6 +45,7 @@ function tick(req, res, next)
 		database.ticks.today(
 			db,
 			req.params.id,
+			req.body.date,
 			function (err, row)
 			{
 				if (err)
@@ -66,6 +67,7 @@ function tick(req, res, next)
 					database.ticks.insert(
 						db,
 						req.params.id,
+						req.body.date,
 						function (err)
 						{
 							if (err)
@@ -123,6 +125,7 @@ function untick(req, res, next)
 		database.ticks.deleteTodays(
 			db,
 			req.params.id,
+			req.body.date,
 			function (err)
 			{
 				if (err)
@@ -139,7 +142,8 @@ function untick(req, res, next)
 						.status(200)
 						.send(
 							{
-								id: parseInt(req.params.id)
+								routine: parseInt(req.params.id),
+								date: req.body.date
 							}
 						);
 				}

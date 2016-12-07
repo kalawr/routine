@@ -42,7 +42,6 @@ deleteConfirmation id =
     "Удалить"
     (DeleteConfirm id)
 
-
 -- UPDATE
 
 update : Message -> Model -> (Model, Cmd Message)
@@ -106,9 +105,9 @@ update message model =
           model
             ! []
 
-    Tick id ->
+    Tick id date ->
       model
-        ! [External.Tick.tick id]
+        ! [External.Tick.tick id date]
 
     TickResult result ->
       case result of 
@@ -119,21 +118,21 @@ update message model =
           model
             ! []
 
-    Untick id ->
+    Untick id date ->
       model
-        ! [External.Untick.untick id]
+        ! [External.Untick.untick id date]
 
     UntickResult result ->
       case result of
-        Ok id ->
-          { model | routines = model.routines |> removeTick model.today id }
+        Ok (id, date) ->
+          { model | routines = model.routines |> removeTick date id }
             ! []
         Err _ ->
           model
             ! []
 
     Now date ->
-      { model | today = Just date }
+      { model | today = date |> Date.Extra.floor Day |> Just }
         ! []
 
     IntentionToRename routine elementId ->
@@ -169,17 +168,22 @@ update message model =
       { model | modal = Nothing }
        ! []
 
+    ToggleMenu id ->
+      { model | routines = model.routines |> toggleMenu id }
+        ! []
+
 -- UPDATE HELPERS
 
 removeRoutine : Id -> List Routine -> List Routine
-removeRoutine id list =
-  List.filter
-    (\x -> x.id /= id)
-    list
+removeRoutine id routines =
+  routines
+  |> List.filter (\x -> x.id /= id)
+    
 
 addTick : Id -> Date -> List Routine -> List Routine
-addTick id date list =
-  List.map
+addTick id date routines =
+  routines
+  |> List.map
     (\routine ->
       if routine.id == id
       then
@@ -187,34 +191,30 @@ addTick id date list =
       else
         routine
     )
-    list
 
-removeTick : Maybe Date -> Id -> List Routine -> List Routine
-removeTick today id routines =
-  case today of
-    Just date ->
-      List.map
-        (\routine ->
-          if routine.id == id
-          then
-            { routine
-              | progress = 
-                  List.filter
-                    (\tick ->
-                      tick /= Date.Extra.floor Day date
-                    )
-                    routine.progress
-            }
-          else
-            routine
-        )
-        routines
-    Nothing ->
-      routines
+removeTick : Date -> Id -> List Routine -> List Routine
+removeTick date id routines =
+  routines
+  |> List.map
+    (\routine ->
+      if routine.id == id
+      then
+        { routine
+          | progress = 
+              List.filter
+                (\tick ->
+                  tick /= Date.Extra.floor Day date
+                )
+                routine.progress
+        }
+      else
+        routine
+    )
 
 renameRoutine : Id -> String -> List Routine -> List Routine
 renameRoutine id string routines =
-  List.map
+  routines
+  |> List.map
     (\routine ->
       if routine.id == id
       then
@@ -222,11 +222,11 @@ renameRoutine id string routines =
       else
         routine
     )
-    routines
 
 finalizeRename : Id -> String -> List Routine -> List Routine
 finalizeRename id name routines =
-  List.map
+  routines
+  |> List.map
     (\routine ->
       if routine.id == id
       then
@@ -237,11 +237,11 @@ finalizeRename id name routines =
       else
         routine
     )
-    routines
 
 cancelRename : Id -> List Routine -> List Routine
 cancelRename id routines =
-  List.map
+  routines
+  |> List.map
     (\routine -> 
       if routine.id == id
       then
@@ -249,7 +249,18 @@ cancelRename id routines =
       else
         routine
     )
-    routines
+
+toggleMenu : Id -> List Routine -> List Routine
+toggleMenu id routines =
+  routines
+  |> List.map
+    (\routine ->
+      if routine.id == id
+      then
+        { routine | menuOpen = not routine.menuOpen }
+      else
+        routine
+    )
 
 -- WIRE UP
 

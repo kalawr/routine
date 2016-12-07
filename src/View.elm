@@ -17,7 +17,7 @@ view model =
   [ modal model
   , mainHeader model
   , div [class "container-narrow"]
-    [ listGroup model
+    [ list model
     ]
   ]
 
@@ -85,80 +85,122 @@ createGroup model =
       ]
 
 
-listGroup : Model -> Html Message
-listGroup model =
+list : Model -> Html Message
+list model =
   div [class "list container-narrow ph-2"]
-    (List.map (listItem model) model.routines)
+    (List.map (routine model) model.routines)
 
 
-listItem : Model -> Routine -> Html Message
-listItem model routine =
+routine : Model -> Routine -> Html Message
+routine model routine =
   article [class "box-shadow mh-2-negative mb-1 pa-2 bg-white oh"]
-  [ listItemHeader routine
-  , yearBlock model routine.progress
-  , listItemButton model routine
+  [ routineHeader model routine
+  , routineCalendar model routine.progress
+  , routineButton model routine
+  , case model.today of
+      Just date ->
+        let
+          cmd =
+            case routine.progress |> List.member (yesterday date) of
+              True ->
+                Untick
+              False ->
+                Tick
+        in 
+          div [onClick (cmd routine.id (yesterday date)), hidden True] [text "Отметить за вчерашний день"]
+      Nothing ->
+        div [] []
   ]
 
 
-listItemHeader : Routine -> Html Message
-listItemHeader routine =
-  let
-    content =
-      case routine.editing of
-        Nothing ->
-          h2
-          [ onDoubleClick (IntentionToRename routine (editId routine.id))
-          , class "no-select pointer mb-1 mt-0 fw-thin font-lg bb-1 border-transparent flex-1"
-          ]
-          [ text routine.name
-          ]
+yesterday : Date -> Date
+yesterday date =
+  Date.Extra.add Day -1 date
 
-        Just string ->
-          Html.form [onSubmit (RenameSubmit routine.id string), class "mb-half flex-1"]
-          [ input
-            [ type_ "text"
-            , onInput (Rename routine.id)
-            , value string
-            , class "pa-0 pb-half bb-1 border-light font-lg mr-half w-100"
-            , id (editId routine.id)
-            , autocomplete False
-            ] []
-          ]
 
-    editButtons =
-      case routine.editing of
-        Nothing ->
-          []
-        
-        Just string ->
-          [ button
-            [ type_ "submit"
-            , class " pa-0 tiny-button no-border"
-            , onClick (RenameSubmit routine.id string)
-            ]
-            [ i [class "icon-check feather"] []
-            ]
-          , button
-            [ type_ "button"
-            , class " pa-0 tiny-button no-border"
-            , onClick (CancelRename routine.id)
-            ]
-            [ i [class "icon-cross feather"] []
-            ]
-          ]
+routineHeader : Model -> Routine -> Html Message
+routineHeader model routine =
+  header [class "flex flex-x-start"]
+  [ routineTitle model routine
+  , routineConfirmEdit model routine
+  , routineCancelEdit model routine
+  , routineMenu model routine
+  ]
 
-    buttons =
-      List.append
-        editButtons
-        [ button [class " pa-0 tiny-button no-border", onClick (Delete routine.id)]
-          [ i [class "icon-trash feather"] []
+
+routineTitle : Model -> Routine -> Html Message
+routineTitle model routine =
+  case routine.editing of
+    Just string ->
+      Html.form [onSubmit (RenameSubmit routine.id string), class "mb-half flex-1"]
+      [ input
+        [ type_ "text"
+        , onInput (Rename routine.id)
+        , value string
+        , class "pa-0 pb-half bb-1 border-light font-lg mr-half w-100"
+        , id (editId routine.id)
+        , autocomplete False
+        ] []
+      ]
+    Nothing ->
+      h2
+      [ onDoubleClick (IntentionToRename routine (editId routine.id))
+      , class "no-select pointer mb-1 mt-0 fw-thin font-lg bb-1 border-transparent flex-1"
+      ]
+      [ text routine.name
+      ]
+
+routineConfirmEdit : Model -> Routine -> Html Message
+routineConfirmEdit model routine =
+  case routine.editing of
+    Just string ->
+      button
+      [ type_ "submit"
+      , class " pa-0 tiny-button no-border"
+      , onClick (RenameSubmit routine.id string)
+      ]
+      [ i [class "icon-check feather"] []
+      ]
+    Nothing ->
+      noElementWhatsoever
+
+
+routineCancelEdit : Model -> Routine -> Html Message
+routineCancelEdit model routine =
+  case routine.editing of
+    Just _ ->
+      button
+      [ type_ "button"
+      , class " pa-0 tiny-button no-border"
+      , onClick (CancelRename routine.id)
+      ]
+      [ i [class "icon-cross feather"] []
+      ]
+    Nothing ->
+      noElementWhatsoever
+
+
+
+routineMenu : Model -> Routine -> Html Message
+routineMenu model routine =
+  case model.today of
+    Just today ->
+      let
+        ticked =
+          todayTicked (yesterday today) routine.progress
+      in
+        div [class "relative"]
+        [ button [class "pa-0 tiny-button no-border", onClick (ToggleMenu routine.id)]
+          [ i [class "icon-menu feather"] []
+          ]
+        , ul [class "pa-0 ma-0 no-bullets box-shadow z-dropdown bg-white absolute top-100 right-0 font-sm", classList [("hidden", not routine.menuOpen)]]
+          [ li [class "pv-half ph-1 bg-light-gray-on-hover changes pointer nowrap", onClick (Delete routine.id)] [text "Удалить"]
+          , li [class "pv-half ph-1 bg-light-gray-on-hover changes pointer nowrap", onClick (routineButtonMessage routine.id (yesterday today) ticked)] [text "Отметить за вчерашний день"]
           ]
         ]
-  in
-    header [class "flex"]
-      [ content
-      , div [] buttons
-      ]
+
+    Nothing ->
+      noElementWhatsoever
 
 
 editId : Id -> String
@@ -168,44 +210,45 @@ editId id =
   |> (++) "edit-field-"
 
 
-listItemButton : Model -> Routine -> Html Message
-listItemButton model routine =
-  let
-    todayOk =
-      todayTicked model.today routine.progress
-  in
-    div [class "flex flex-row mt-1"]
-    [ button
-      [ class "flex-1 no-border pa-half round-corners"
-      , classList 
-        [ ("bg-light-gray", (not todayOk))
-        , ("bg-emerald", todayOk)
-        , ("white", todayOk)
+routineButton : Model -> Routine -> Html Message
+routineButton model routine =
+  case model.today of
+    Just today ->
+      let
+        ticked =
+          todayTicked today routine.progress
+      in
+        div [class "flex flex-row mt-1"]
+        [ button
+          [ class "flex-1 no-border pa-half round-corners"
+          , classList 
+            [ ("bg-light-gray", (not ticked))
+            , ("bg-emerald", ticked)
+            , ("white", ticked)
+            ]
+          , onClick (routineButtonMessage routine.id today ticked)
+          ]
+          [ i [class "icon-check feather"] []
+          ]
         ]
-      , onClick (listItemButtonMessage routine.id todayOk)
-      ]
-      [ i [class "icon-check feather"] []
-      ]
-    ]
+
+    Nothing ->
+      noElementWhatsoever
 
 
-listItemButtonMessage : Id -> Bool -> Message
-listItemButtonMessage id ticked =
+routineButtonMessage : Id -> Date -> Bool -> Message
+routineButtonMessage id date ticked =
   case ticked of
     True ->
-      Untick id
+      Untick id date
     False ->
-      Tick id
+      Tick id date
 
 
-todayTicked : Maybe Date -> List Date -> Bool
+todayTicked : Date -> List Date -> Bool
 todayTicked today ticks =
-  case today of
-    Just date ->
-      ticks
-      |> List.member (Date.Extra.floor Day date)
-    Nothing ->
-      False
+  ticks
+  |> List.member today
 
 
 year : Date -> List Date
@@ -216,7 +259,7 @@ year today =
   in
     Date.Extra.range Day 1
       (Date.Extra.fromParts  y Jan 1 0 0 0 0)
-      today
+      (Date.Extra.add Day 1 today)
 
 
 yearMatches : List Date -> List Date -> List (Date, Bool)
@@ -237,8 +280,8 @@ dayInTicks ticks day =
     ticks
 
 
-yearBlock : Model -> List Date -> Html Message
-yearBlock model progress =
+routineCalendar : Model -> List Date -> Html Message
+routineCalendar model progress =
   case model.today of
     Just today ->
       div [class "ticks cf"]

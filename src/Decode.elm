@@ -7,12 +7,13 @@ import Types exposing (..)
 
 routine : Decoder Routine
 routine =
-  map4
+  map5
     Routine
     (field "name" string)
     (field "progress" (list tick))
     (field "id" int)
     (succeed Nothing)
+    (succeed False)
 
 routines : Decoder (List Routine)
 routines =
