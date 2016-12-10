@@ -40,8 +40,8 @@ input {
 	color: #1ECD97;
 }
 
-.bg-pale-blue {
-	background-color: #cbdeff;
+.bg-base {
+	background-color: #4f4f4f;
 }
 
 .bg-white {
@@ -57,7 +57,7 @@ input {
 }
 
 .bg-gray {
-	background-color: #dde3ee;
+	background-color: #656565;
 }
 
 .bg-light-gray {
@@ -183,16 +183,6 @@ input {
 
 .mb-tiny {
 	margin-bottom: 2px;
-}
-
-@media (min-width: 600px) {
-	.mb-4-desktop {
-		margin-bottom: 4rem;
-	}	
-
-	.bg-pale-blue-if-wide-enough {
-		background-color: #cbdeff;
-	}
 }
 
 .container,

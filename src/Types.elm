@@ -12,6 +12,7 @@ type alias Model =
 
 type alias Routine =
   { name : String
+  , created : Date
   , progress : List Date
   , id : Id
   , editing : Maybe String
@@ -50,3 +51,8 @@ type alias ModalConfig =
   , confirmText : String
   , confirmMessage : Message
   }
+
+type TickState 
+  = BeforeCreated
+  | Ticked
+  | NotTicked

@@ -17,7 +17,7 @@ view model =
   [ modal model
   , mainHeader model
   , div [class "container-narrow"]
-    [ list model
+    [ routines model
     ]
   ]
 
@@ -85,8 +85,8 @@ createGroup model =
       ]
 
 
-list : Model -> Html Message
-list model =
+routines : Model -> Html Message
+routines model =
   div [class "list container-narrow ph-2"]
     (List.map (routine model) model.routines)
 
@@ -95,17 +95,8 @@ routine : Model -> Routine -> Html Message
 routine model routine =
   article [class "box-shadow mh-2-negative mb-1 pa-2 bg-white oh"]
   [ routineHeader model routine
-  , routineCalendar model routine.progress
+  , routineCalendar model routine
   , routineButton model routine
-  , let
-      cmd =
-        case routine.progress |> List.member (yesterday model.today) of
-          True ->
-            Untick
-          False ->
-            Tick
-    in 
-      div [onClick (cmd routine.id (yesterday model.today)), hidden True] [text "Отметить за вчерашний день"]
   ]
 
 
@@ -146,6 +137,7 @@ routineTitle model routine =
       [ text routine.name
       ]
 
+
 routineConfirmEdit : Model -> Routine -> Html Message
 routineConfirmEdit model routine =
   case routine.editing of
@@ -174,7 +166,6 @@ routineCancelEdit model routine =
       ]
     Nothing ->
       noElementWhatsoever
-
 
 
 routineMenu : Model -> Routine -> Html Message
@@ -237,6 +228,15 @@ todayTicked today ticks =
   |> List.member today
 
 
+routineCalendar : Model -> Routine -> Html Message
+routineCalendar model routine =
+  model.today
+  |> year
+  |> List.map (\day -> (day, dayStatus routine.created routine.progress day))
+  |> List.map yearItem
+  |> div [class "ticks cf"]
+
+
 year : Date -> List Date
 year today =
   let
@@ -248,43 +248,32 @@ year today =
       (Date.Extra.add Day 1 today)
 
 
-yearMatches : List Date -> List Date -> List (Date, Bool)
-yearMatches year ticks =
-  List.map
-    ( \day ->
-      (day, dayInTicks ticks day)
-    )
-    year
+dayStatus : Date -> List Date -> Date -> TickState
+dayStatus created tickedDays day =
+  if Date.toTime created > Date.toTime day
+  then
+    BeforeCreated
+  else
+    if List.any (\tickedDay -> Date.Extra.equal day tickedDay) tickedDays
+    then
+      Ticked
+    else
+      NotTicked
 
 
-dayInTicks : List Date -> Date -> Bool
-dayInTicks ticks day =
-  List.any
-    ( \tick ->
-      Date.Extra.equal tick day
-    )
-    ticks
-
-
-routineCalendar : Model -> List Date -> Html Message
-routineCalendar model progress =
-  div [class "ticks cf"]
-    (List.map
-      yearItem
-      (yearMatches (year model.today) progress))
-
-
-yearItem : (Date, Bool) -> Html Message
-yearItem (date, attended) =
-  span
-  [ title (formatDate date)
-  , class "tick fl"
-  , classList 
-    [ ("bg-emerald", attended)
-    , ("bg-light-gray", not attended)
-    ]
-  ]
-  []
+yearItem : (Date, TickState) -> Html Message
+yearItem (date, state) =
+  let
+    classes =
+      case state of
+        BeforeCreated ->
+          "tick fl bg-gray"
+        Ticked ->
+          "tick fl bg-emerald tick--yes"
+        NotTicked ->
+          "tick fl bg-gray"
+  in
+    span [title (formatDate date), class classes] []
 
 
 formatDate : Date -> String
