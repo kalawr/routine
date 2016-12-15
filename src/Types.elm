@@ -2,6 +2,7 @@ module Types exposing (..)
 
 import Http exposing (Error(..))
 import Date exposing (Date)
+import Time exposing (Time)
 
 type alias Model =
   { new : Maybe String
@@ -44,6 +45,8 @@ type Message
   | DismissModal
   | ToggleMenu Id
   | NoOp
+  | TimeElapsed Time
+  | DateArrived Date
 
 type alias ModalConfig =
   { text : String

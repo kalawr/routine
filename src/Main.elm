@@ -12,6 +12,7 @@ import External.Untick
 import External.Edit
 import External.Focus
 import View exposing (..)
+import Task
 
 -- STATE
 
@@ -37,7 +38,7 @@ initialModel date =
 
 subscriptions : Model -> Sub Message
 subscriptions _ =
-  Sub.none
+  Time.every Time.minute TimeElapsed
 
 deleteConfirmation : Id -> ModalConfig
 deleteConfirmation id =
@@ -172,6 +173,14 @@ update message model =
     ToggleMenu id ->
       { model | routines = model.routines |> toggleMenu id }
         ! []
+
+    TimeElapsed _ ->
+      model
+        ! [Task.perform DateArrived Date.now]
+
+    DateArrived date ->
+      { model | today = date |> Date.Extra.floor Day }
+       ! []
 
 -- UPDATE HELPERS
 
