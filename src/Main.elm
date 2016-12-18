@@ -13,6 +13,7 @@ import External.Edit
 import External.Focus
 import View exposing (..)
 import Task
+import Mouse
 
 -- STATE
 
@@ -34,11 +35,23 @@ initialModel date =
   , modal = Nothing
   , today = date
   , routines = []
+  , routineWithOpenMenu = Nothing
   }
 
 subscriptions : Model -> Sub Message
-subscriptions _ =
-  Time.every Time.minute TimeElapsed
+subscriptions model =
+  Sub.batch
+  [ Time.every Time.minute TimeElapsed
+  , dropdownCloseSubscription model
+  ]
+
+dropdownCloseSubscription : Model -> Sub Message
+dropdownCloseSubscription model =
+  case model.routineWithOpenMenu of
+    Just _ ->
+      Mouse.clicks (\_ -> Blur)
+    Nothing ->
+      Sub.none
 
 deleteConfirmation : Id -> ModalConfig
 deleteConfirmation id =
@@ -170,8 +183,8 @@ update message model =
       { model | modal = Nothing }
        ! []
 
-    ToggleMenu id ->
-      { model | routines = model.routines |> toggleMenu id }
+    OpenMenu routine ->
+      { model | routineWithOpenMenu = Just routine }
         ! []
 
     TimeElapsed _ ->
@@ -181,6 +194,10 @@ update message model =
     DateArrived date ->
       { model | today = date |> Date.Extra.floor Day }
        ! []
+
+    Blur ->
+      { model | routineWithOpenMenu = Nothing }
+        ! []
 
 -- UPDATE HELPERS
 
@@ -256,18 +273,6 @@ cancelRename id routines =
       if routine.id == id
       then
         { routine | editing = Nothing }
-      else
-        routine
-    )
-
-toggleMenu : Id -> List Routine -> List Routine
-toggleMenu id routines =
-  routines
-  |> List.map
-    (\routine ->
-      if routine.id == id
-      then
-        { routine | menuOpen = not routine.menuOpen }
       else
         routine
     )

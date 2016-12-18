@@ -173,12 +173,16 @@ routineMenu model routine =
   let
     ticked =
       todayTicked (yesterday model.today) routine.progress
+    showMenu =
+      model.routineWithOpenMenu
+      |> Maybe.map (\routine_ -> routine_.id == routine.id)
+      |> Maybe.withDefault False
   in
     div [class "relative"]
-    [ button [class "pa-0 tiny-button no-border", onClick (ToggleMenu routine.id)]
+    [ button [class "pa-0 tiny-button no-border", onClick (OpenMenu routine)]
       [ i [class "icon-menu feather"] []
       ]
-    , ul [class "pa-0 ma-0 no-bullets box-shadow z-dropdown bg-white absolute top-100 right-0 font-sm", classList [("hidden", not routine.menuOpen)]]
+    , ul [class "pa-0 ma-0 no-bullets box-shadow z-dropdown bg-white absolute top-100 right-0 font-sm", classList [("hidden", not showMenu)]]
       [ li [class "pv-half ph-1 bg-light-gray-on-hover changes pointer nowrap", onClick (Delete routine.id)] [text "Удалить"]
       , li [class "pv-half ph-1 bg-light-gray-on-hover changes pointer nowrap", onClick (routineButtonMessage routine.id (yesterday model.today) ticked)] [text "Отметить за вчерашний день"]
       ]
@@ -267,11 +271,11 @@ yearItem (date, state) =
     classes =
       case state of
         BeforeCreated ->
-          "tick fl bg-gray"
+          "tick fl bg-light-gray"
         Ticked ->
           "tick fl bg-emerald tick--yes"
         NotTicked ->
-          "tick fl bg-gray"
+          "tick fl bg-light-gray"
   in
     span [title (formatDate date), class classes] []
 

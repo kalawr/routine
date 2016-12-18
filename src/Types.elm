@@ -9,6 +9,7 @@ type alias Model =
   , modal : Maybe ModalConfig
   , today : Date
   , routines : List Routine
+  , routineWithOpenMenu : Maybe Routine
   }
 
 type alias Routine =
@@ -17,7 +18,6 @@ type alias Routine =
   , progress : List Date
   , id : Id
   , editing : Maybe String
-  , menuOpen : Bool
   }
 
 type alias Id =
@@ -43,10 +43,11 @@ type Message
   | RenameResult (Result Error (Id, String))
   | CancelRename Id
   | DismissModal
-  | ToggleMenu Id
+  | OpenMenu Routine
   | NoOp
   | TimeElapsed Time
   | DateArrived Date
+  | Blur
 
 type alias ModalConfig =
   { text : String
